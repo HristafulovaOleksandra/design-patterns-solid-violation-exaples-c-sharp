@@ -1,0 +1,37 @@
+# Visual Studio-specific files
+.vs/
+
+# Build results
+bin/
+obj/
+
+# User-specific files
+*.user
+*.suo
+*.vscode/
+
+# Logs
+*.log
+
+# NuGet
+*.nupkg
+packages/
+
+# Rider-specific files
+.idea/
+
+# Temporary files
+*.tmp
+*.cache
+
+# Publish output
+publish/
+
+# Entity Framework migrations
+Migrations/
+
+# JetBrains Rider / ReSharper
+*.DotSettings.user
+
+# Other IDE-specific settings
+*.sln.iml
