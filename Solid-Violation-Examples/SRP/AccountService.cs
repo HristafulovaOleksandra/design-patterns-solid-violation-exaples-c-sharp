@@ -1,51 +1,32 @@
-﻿using System.Globalization;
-
-namespace Solid_Violation_Examples.SRP
+﻿namespace Solid_Violation_Examples.SRP
 {
     public class AccountService
     {
-        private const string STATEMENT_HEADER = "DATE | AMOUNT | BALANCE";
-        private const string DATE_FORMAT = "dd/MM/yyyy";
-        private const string AMOUNT_FORMAT = "F2";
+        private readonly ITransactionRepository transactionRepository;
+        private readonly Clock clock;
+        private readonly PrinterService printerService;
 
-        private readonly ITransactionRepository _transactionRepository;
-        private readonly Clock _clock;
-        private readonly ConsolePrinter _console;
-
-        public AccountService(ITransactionRepository transactionRepository, Clock clock, ConsolePrinter console)
+        public AccountService(ITransactionRepository transactionRepository, Clock clock, PrinterService printerService)
         {
-            _transactionRepository = transactionRepository;
-            _clock = clock;
-            _console = console;
+            this.transactionRepository = transactionRepository;
+            this.clock = clock;
+            this.printerService = printerService;
         }
 
-        public void Deposit(int amount) => _transactionRepository.Add(TransactionWith(amount));
-        public void Withdraw(int amount) => _transactionRepository.Add(TransactionWith(-amount));
+        public void Deposit(int amount)
+        {
+            transactionRepository.Add(new Transaction(clock.Today, amount));
+        }
+
+        public void Withdraw(int amount)
+        {
+            transactionRepository.Add(new Transaction(clock.Today, -amount));
+        }
+
         public void PrintStatement()
         {
-            PrintHeader();
-            PrintTransactions();
+            var transactions = transactionRepository.GetAll();
+            printerService.Print(transactions);
         }
-        private void PrintHeader() => PrintLine(STATEMENT_HEADER);
-        private void PrintTransactions()
-        {
-            List<Transaction> transactions = _transactionRepository.GetAll();
-            int balance = 0;
-
-            foreach(var transaction in transactions.OrderByDescending(t => t.Date))
-            {
-                balance += transaction.Amount;
-                PrintLine(StatementLine(transaction, balance));
-            }
-        }
-        private void PrintLine(string line) => Console.WriteLine(line);
-        private string StatementLine(Transaction transaction, int balance) =>
-            $"{FormatDate(transaction.Date)} | {FormatNumber(transaction.Amount)} | {FormatNumber(balance)}";
-        private string FormatDate(DateOnly date) =>
-            date.ToString(DATE_FORMAT, CultureInfo.InvariantCulture);
-        private string FormatNumber(int amount) =>
-            amount.ToString(AMOUNT_FORMAT, CultureInfo.InvariantCulture);
-
-        private Transaction TransactionWith(int amount) => new Transaction(DateOnly.FromDateTime(DateTime.Today), amount);
     }
 }
